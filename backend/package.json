@@ -1,0 +1,44 @@
+{
+  "name": "farmbridge-backend",
+  "version": "0.1.0",
+  "description": "FarmBridge API — farmer–buyer marketplace (Express + MongoDB + Redis)",
+  "private": true,
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write ."
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "nodemonConfig": {
+    "watch": [
+      "src",
+      "common"
+    ],
+    "ext": "js,json",
+    "ignore": [
+      "uploads"
+    ]
+  },
+  "dependencies": {
+    "compression": "^1.8.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.3.0",
+    "mongoose": "^9.9.4",
+    "morgan": "^1.12.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.9.1",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^16.5.0",
+    "nodemon": "^3.1.14",
+    "prettier": "^3.9.6"
+  }
+}

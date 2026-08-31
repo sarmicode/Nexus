@@ -1,0 +1,3 @@
+# Phase 01+ creates request-validation schemas here (zod or joi, RULES.md §4).
+# Phase 00 has no request payloads to validate yet — the folder exists per
+# blueprint §1.
