@@ -40,12 +40,14 @@ OTP login, FPO CRUD (Phase 2), any listings.
 ## 🧪 Acceptance Criteria
 
 - [ ] Register → login → `GET /users/me` round-trip works for farmer and buyer roles — **implemented; E2E pending a reachable MongoDB**
-- [ ] Farmer token cannot call admin-only route (403); no token → 401 — **401 verified live; 403 implemented, E2E pending**
-- [ ] Expired access token auto-refreshes without user noticing — **implemented (interceptor + rotation); E2E pending**
+- [ ] Farmer token cannot call admin-only route (403); no token → 401 — **401 verified live (no token / garbage / expired / wrong-type all → 401 with distinct messages); 403 implemented, E2E pending**
+- [ ] Expired access token auto-refreshes without user noticing — **backend half verified live (expired access → 401 "Access token expired", which is what triggers the silent refresh); frontend refresh+retry E2E pending**
 - [ ] Passwords stored only as bcrypt hashes; no password in any response/log — **cost-10 hash/compare verified; responses scrubbed via `select: false` + `toPublic()`; DB write path pending**
-- [x] Wrong-credentials rate limiting verified (429 after threshold) — verified live: 429 + `RATE_LIMITED` envelope on the 11th auth attempt (10/15 min budget)
+- [x] Wrong-credentials rate limiting verified (429 after threshold) — verified live: 429 + `RATE_LIMITED` envelope on the 11th auth attempt (10/15 min budget; `RateLimit: limit=10` headers confirmed on `/auth/*`)
 - [ ] UI: register → auto-login → role-aware navbar → logout → protected route redirects to login — **implemented; E2E pending**
 - [ ] Postman collection passes end-to-end — **collection committed (19 requests, asserts + token extraction); run pending**
+
+> Re-verified 2026-08-31 (2nd pass): dev:db retry still blocked (MongoDB CDN unreachable from sandbox egress), JWT error paths verified live, `npm audit` → 0 vulnerabilities in both apps.
 
 ## ⏳ Remaining Tasks (to close this phase)
 

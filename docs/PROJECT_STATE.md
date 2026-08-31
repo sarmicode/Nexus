@@ -67,12 +67,25 @@
 
 ## Known Issues / TODO
 
-- [ ] **Close Phase 01:** run `npm run verify:auth` against a real MongoDB (see Remaining Tasks) — blocked in the build sandbox by egress (MongoDB CDN unreachable)
+- [ ] **Close Phase 01:** run `npm run verify:auth` against a real MongoDB (see Remaining Tasks) — blocked in the build sandbox by egress (MongoDB CDN unreachable; `dev:db` retried 2026-08-31, same TLS failure)
 - [ ] **Merge `arena/01a05757-nexus`** (Phase 00 + Phase 01 work) into `main` — owner's action; nothing has been merged
 - [ ] Finalize product name
 - [ ] Choose payment gateway (suggested: Razorpay test mode)
 - [ ] Choose SMS/email providers (free tiers fine)
 - [ ] Decide ML scope: rule-based only vs. Python microservice (Phase 5)
+
+## Verification Ledger (what has actually been run)
+
+| Verified | How | When |
+|---|---|---|
+| Health envelope, Helmet + `RateLimit-*` headers, 404/400/429 envelopes, Vite proxy path | live curl + browser-preview path | Phase 00 close |
+| Auth strict limiter: 429 on 11th attempt, `RateLimit: limit=10;w=900` headers on `/auth/*` | live curl | Phase 01 build |
+| Validation 400s (phone format, password length, field paths), 401 no-token, clean 500 on DB-down | live curl | Phase 01 build |
+| JWT error paths: no token → 401, garbage → 401, **expired access → 401 "Access token expired"**, missing `type: "access"` → 401 | live curl with crafted signed JWTs | Phase 01 re-check |
+| bcrypt cost-10 hash/compare round-trip | node script | Phase 01 build |
+| `npm audit` — **0 vulnerabilities** in backend and frontend | npm | Phase 01 re-check |
+| Lint (ESLint 10 + Prettier) + production build in both apps | npm scripts | every commit |
+| **NOT yet verifiable here:** register/login/me round-trip, 403 RBAC, refresh rotation, logout wipe, UI auto-login — all need a reachable MongoDB | — | closes via `npm run verify:auth` |
 
 ## API Surface Built So Far
 

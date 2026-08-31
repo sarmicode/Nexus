@@ -113,4 +113,4 @@ _Agent: when you rewrite `PROMPT.md`, keep this template at the bottom (unchange
 
 ---
 
-*Last regenerated: 2026-08-31 · Phase 01 PARTIAL — code complete, DB E2E verification pending (MongoDB unreachable from build sandbox)*
+*Last regenerated: 2026-08-31 · Phase 01 PARTIAL — code complete, DB E2E verification pending (MongoDB unreachable from build sandbox; dev:db retried, JWT error paths + npm audit verified live)*
