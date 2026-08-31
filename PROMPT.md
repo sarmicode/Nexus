@@ -13,9 +13,9 @@
 | | |
 |---|---|
 | **Project** | FarmBridge — Farmer–Buyer Marketplace (SIH 2026 · SIH26132) |
-| **Active phase** | `PHASE-01 — Authentication & User Management` |
+| **Active phase** | `PHASE-01 — Authentication & User Management` (PARTIAL — finishing) |
 | **Phase doc** | [`docs/phases/PHASE-01-auth-users.md`](docs/phases/PHASE-01-auth-users.md) |
-| **Build state** | Phase 00 ✅ complete: running Express 5 gateway (`GET /api/v1/health`, helmet, CORS, rate limiting, central error handling) + Vite 6/React 19 shell (axios service layer, live health page), linting in both apps. Phase 00 work is on branch `arena/01a05757-nexus` — **not yet merged into `main`** (owner's call). ⚠️ No local MongoDB in the previous sandbox — connect a real Mongo (local or Atlas M0) before building the `User` model. |
+| **Build state** | Phase 01 **code is complete** (User/RefreshToken models, JWT + rotating refresh, RBAC, zod validation, strict auth rate limit, admin seed, Login/Register/Profile UI with silent refresh) — lint/build clean, pushed. **Remaining: DB-dependent E2E verification + closing the phase.** ⚠️ Blocker in the build sandbox: egress blocks MongoDB's CDN, so no `mongod` binary is downloadable there (verified: fastdl/downloads.mongodb.org unreachable; all npm "prebuilt" packages use the same CDN). On any machine with normal internet the finish is 3 commands — see "Remaining tasks" below. |
 | **Repo** | Monorepo: `frontend/` (React+Vite) · `backend/` (Express) — see `docs/PROJECT_BLUEPRINT.md` |
 
 ---
@@ -32,12 +32,19 @@ You are the development agent for **FarmBridge**, a farmer–buyer marketplace s
 
 1. `RULES.md` — non-negotiable development & agent rules
 2. `docs/PROJECT_STATE.md` — everything built so far + decisions log
-3. `docs/phases/PHASE-01-auth-users.md` — **the phase you must complete now**
+3. `docs/phases/PHASE-01-auth-users.md` — **the phase you must FINISH now** (its "Remaining Tasks" section)
 4. `docs/PROJECT_BLUEPRINT.md` — the architecture you must conform to (MERN: React+Vite frontend, Node/Express backend, MongoDB + Redis, optional Python ML service)
 
-**Your job this session:**
+**Your job this session — finish Phase 01:**
 
-- Implement the active phase listed above — its scope, acceptance criteria, and nothing more (no future-phase features).
+- Get a MongoDB running that the API can reach, in order of preference:
+  (a) a `MONGO_URI` the owner provides (local or free Atlas M0 — put it in `backend/.env`),
+  (b) `cd backend && npm run dev:db` (in-memory dev Mongo; downloads the official binary once — needs normal internet),
+  (c) if **no** MongoDB is reachable, do the rest of the work and keep the phase 🟡 with the same blocker noted (never fabricate "done").
+- Run `cd backend && npm run seed:admin` (needs `ADMIN_PHONE`/`ADMIN_PASSWORD` in `backend/.env` — set dev values if blank).
+- Run `cd backend && npm run verify:auth` — the scripted acceptance matrix. Fix any FAIL at the source (code, not the script) and re-run until all PASS.
+- Optionally run `docs/postman/auth.json` in Postman (same matrix, human-driven).
+- Then: tick the Phase 01 acceptance boxes in its doc, set Status `✅ DONE`, and run the full Phase Completion Protocol (steps 1–8) — that closes Phase 01 and regenerates this file for **Phase 02 — Farmer Module**.
 - Follow every rule in `RULES.md` (branch + commit style, API envelope `/api/v1`, validation, security, docs).
 - 🚫 **HARD RULE — NEVER MERGE:** do not merge any branch or PR (into `main` or anywhere else). Work on your phase branch, commit and push **that branch only**, and tell the user it is ready for merge. The only exception is an explicit merge order from the user in the current chat.
 - Keep the README quick start working at all times.
@@ -106,4 +113,4 @@ _Agent: when you rewrite `PROMPT.md`, keep this template at the bottom (unchange
 
 ---
 
-*Last regenerated: 2026-08-31 · Phase 00 complete · Phase 01 pending*
+*Last regenerated: 2026-08-31 · Phase 01 PARTIAL — code complete, DB E2E verification pending (MongoDB unreachable from build sandbox)*
