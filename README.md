@@ -81,7 +81,7 @@ This repo is built **phase by phase, each phase in a fresh chat/agent session**.
 
 | Phase | Scope | Doc | Status |
 |---|---|---|---|
-| 0 | Foundation & repo bootstrap | [PHASE-00](docs/phases/PHASE-00-foundation.md) | ⬜ In progress |
+| 0 | Foundation & repo bootstrap | [PHASE-00](docs/phases/PHASE-00-foundation.md) | ✅ |
 | 1 | Auth & user management (JWT, RBAC) | [PHASE-01](docs/phases/PHASE-01-auth-users.md) | ⬜ |
 | 2 | Farmer module (listings, FPO, uploads) | [PHASE-02](docs/phases/PHASE-02-farmer-module.md) | ⬜ |
 | 3 | Buyer module (search, compare, watchlist) | [PHASE-03](docs/phases/PHASE-03-buyer-module.md) | ⬜ |
@@ -121,7 +121,7 @@ phase branch → updates STATE + LOG → REGENERATES PROMPT.md for the next phas
 # Backend  (http://localhost:5000)
 cd backend
 npm install
-cp .env.example .env      # fill in values
+cp .env.example .env      # local dev defaults included — set real values for real environments
 npm run dev
 
 # Frontend (http://localhost:5173) — new terminal
@@ -129,9 +129,13 @@ cd frontend
 npm install
 cp .env.example .env
 npm run dev
+# open http://localhost:5173 — the home page shows a live ping to the API
 ```
 
 > Run frontend and backend on separate ports. Use Postman for API testing. Never commit `.env` files.
+> The frontend calls the API at the **relative** path `/api/v1/…`; the Vite dev server proxies
+> `/api` → `http://localhost:5000` (see `frontend/vite.config.js`). A local MongoDB (or free
+> Atlas M0) makes `GET /api/v1/health` report `db: "connected"` — the API boots either way.
 
 ### Environment variables
 
@@ -140,9 +144,12 @@ npm run dev
 | Key | Example |
 |---|---|
 | `PORT` | `5000` |
-| `MONGO_URI` | `mongodb://localhost:27017/marketplace` |
-| `JWT_SECRET` | `your_jwt_secret` |
+| `NODE_ENV` | `development` |
+| `MONGO_URI` | `mongodb://127.0.0.1:27017/farmbridge` |
+| `JWT_SECRET` | *strong random secret (≥ 32 chars) in real environments* |
 | `REDIS_URL` | `redis://localhost:6379` |
+| `CORS_ORIGIN` | `http://localhost:5173` (production allowlist) |
+| `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | `900000` / `100` |
 | `EMAIL_API_KEY` | `your_email_api_key` |
 | `SMS_API_KEY` | `your_sms_api_key` |
 | `PAYMENT_API_KEY` | `your_payment_key` |
@@ -152,8 +159,8 @@ npm run dev
 
 | Key | Example |
 |---|---|
-| `VITE_API_BASE_URL` | `http://localhost:5000/api` |
-| `VITE_MAPS_API_KEY` | `your_maps_key` |
+| `VITE_API_BASE_URL` | `/api/v1` (relative — Vite proxies to `:5000`; or a full URL for a deployed backend) |
+| `VITE_MAPS_API_KEY` | *(optional — Leaflet/OSM needs no key)* |
 
 ---
 

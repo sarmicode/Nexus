@@ -13,9 +13,9 @@
 | | |
 |---|---|
 | **Project** | FarmBridge — Farmer–Buyer Marketplace (SIH 2026 · SIH26132) |
-| **Active phase** | `PHASE-00 — Foundation & Repo Bootstrap` |
-| **Phase doc** | [`docs/phases/PHASE-00-foundation.md`](docs/phases/PHASE-00-foundation.md) |
-| **Build state** | Docs scaffold ready. No application code exists yet. |
+| **Active phase** | `PHASE-01 — Authentication & User Management` |
+| **Phase doc** | [`docs/phases/PHASE-01-auth-users.md`](docs/phases/PHASE-01-auth-users.md) |
+| **Build state** | Phase 00 ✅ complete: running Express 5 gateway (`GET /api/v1/health`, helmet, CORS, rate limiting, central error handling) + Vite 6/React 19 shell (axios service layer, live health page), linting in both apps. Phase 00 work is on branch `arena/01a05757-nexus` — **not yet merged into `main`** (owner's call). ⚠️ No local MongoDB in the previous sandbox — connect a real Mongo (local or Atlas M0) before building the `User` model. |
 | **Repo** | Monorepo: `frontend/` (React+Vite) · `backend/` (Express) — see `docs/PROJECT_BLUEPRINT.md` |
 
 ---
@@ -32,7 +32,7 @@ You are the development agent for **FarmBridge**, a farmer–buyer marketplace s
 
 1. `RULES.md` — non-negotiable development & agent rules
 2. `docs/PROJECT_STATE.md` — everything built so far + decisions log
-3. `docs/phases/PHASE-00-foundation.md` — **the phase you must complete now**
+3. `docs/phases/PHASE-01-auth-users.md` — **the phase you must complete now**
 4. `docs/PROJECT_BLUEPRINT.md` — the architecture you must conform to (MERN: React+Vite frontend, Node/Express backend, MongoDB + Redis, optional Python ML service)
 
 **Your job this session:**
@@ -106,4 +106,4 @@ _Agent: when you rewrite `PROMPT.md`, keep this template at the bottom (unchange
 
 ---
 
-*Last regenerated: initial scaffold · Phase 00 pending*
+*Last regenerated: 2026-08-31 · Phase 00 complete · Phase 01 pending*
