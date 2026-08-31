@@ -30,6 +30,19 @@ const toPositiveInt = (value, fallback) => {
   return Number.isFinite(n) && n > 0 ? n : fallback;
 };
 
+/** Parse a duration like '15m', '1h', '7d', '90s' or bare seconds → ms. */
+const ttlToMs = (value, fallback) => {
+  if (!value) return fallback;
+  const n = parseInt(value, 10);
+  if (!Number.isFinite(n) || n <= 0) return fallback;
+  if (value.endsWith('ms')) return n;
+  if (value.endsWith('s')) return n * 1000;
+  if (value.endsWith('m')) return n * 60 * 1000;
+  if (value.endsWith('h')) return n * 60 * 60 * 1000;
+  if (value.endsWith('d')) return n * 24 * 60 * 60 * 1000;
+  return n * 1000; // bare number = seconds
+};
+
 module.exports = {
   env,
   isProduction: env === 'production',
@@ -47,6 +60,13 @@ module.exports = {
     windowMs: toPositiveInt(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
     max: toPositiveInt(process.env.RATE_LIMIT_MAX, 100),
   },
+  jwt: {
+    accessTtlMs: ttlToMs(process.env.JWT_ACCESS_TTL, 15 * 60 * 1000), // default 15 min
+    refreshTtlMs: ttlToMs(process.env.JWT_REFRESH_TTL, 7 * 24 * 60 * 60 * 1000), // default 7 d
+  },
+  // Admin seed (npm run seed:admin)
+  adminPhone: process.env.ADMIN_PHONE || '',
+  adminPassword: process.env.ADMIN_PASSWORD || '',
   // Integrations wired up in later phases (kept here so .env is complete from day one).
   emailApiKey: process.env.EMAIL_API_KEY || '',
   smsApiKey: process.env.SMS_API_KEY || '',

@@ -30,6 +30,8 @@ async function attemptConnection(attempt) {
   try {
     await mongoose.connect(config.mongoUri, {
       serverSelectionTimeoutMS: SERVER_SELECTION_TIMEOUT_MS,
+      // Fail queued operations fast while the DB is down (default is 10 s).
+      bufferTimeoutMS: 3000,
     });
   } catch (err) {
     console.error(`[db] connection attempt ${attempt}/${MAX_ATTEMPTS} failed: ${err.message}`);

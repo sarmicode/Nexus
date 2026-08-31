@@ -13,6 +13,7 @@ module.exports = {
     CONFLICT: 'CONFLICT',
     RATE_LIMITED: 'RATE_LIMITED',
     INTERNAL_ERROR: 'INTERNAL_ERROR',
+    DATABASE_UNAVAILABLE: 'DATABASE_UNAVAILABLE',
   },
   // RBAC roles — enforced from Phase 01 (server-side, never client-trusted).
   ROLES: { FARMER: 'farmer', BUYER: 'buyer', ADMIN: 'admin' },

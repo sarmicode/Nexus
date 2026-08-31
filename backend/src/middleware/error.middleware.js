@@ -22,6 +22,18 @@ function errorHandler(err, req, res, _next) {
   if (err.type === 'entity.too.large') {
     err = ApiError.badRequest('Request body too large (limit 1 MB)');
   }
+  // Database unreachable (no mongod / Atlas down / queued op timed out) —
+  // clean message, no internals (collection names, driver errors, …).
+  const isDbDown =
+    err &&
+    (err.name === 'MongooseServerSelectionError' ||
+      err.name === 'MongooseNotConnectedError' ||
+      /ECONNREFUSED|MongoNetworkError|MongoServerSelectionError|buffering timed out/.test(
+        String(err.message || '')
+      ));
+  if (isDbDown) {
+    err = ApiError.internal('Database temporarily unavailable, please try again');
+  }
 
   const status = err.statusCode || 500;
   const isServerError = status >= 500;
