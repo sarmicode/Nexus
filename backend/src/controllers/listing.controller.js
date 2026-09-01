@@ -17,6 +17,12 @@ const listListings = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, data });
 });
 
+// GET /api/v1/listings/search
+const searchListings = asyncHandler(async (req, res) => {
+  const data = await listingService.searchListings(req.validated.query, req.user);
+  res.status(200).json({ success: true, data });
+});
+
 // GET /api/v1/listings/:id
 const getListing = asyncHandler(async (req, res) => {
   const data = await listingService.getListing(req.params.id, req.user);
@@ -45,6 +51,7 @@ const addImages = asyncHandler(async (req, res) => {
 module.exports = {
   createListing,
   listListings,
+  searchListings,
   getListing,
   updateListing,
   deleteListing,

@@ -15,6 +15,8 @@ const SORT_MAP = {
   oldest: { createdAt: 1 },
   priceAsc: { pricePerUnit: 1 },
   priceDesc: { pricePerUnit: -1 },
+  qtyAsc: { 'quantity.value': 1 },
+  qtyDesc: { 'quantity.value': -1 },
 };
 
 const POPULATE_FARMER = { path: 'farmerId', select: 'name location' };
@@ -35,6 +37,20 @@ function buildFilter({ crop, district, organic, status, minQty, priceMin, priceM
     filter.pricePerUnit = {};
     if (priceMin !== undefined) filter.pricePerUnit.$gte = priceMin;
     if (priceMax !== undefined) filter.pricePerUnit.$lte = priceMax;
+  }
+  return filter;
+}
+
+/**
+ * Full-text-ish search filter (Phase 03). Combines `buildFilter` with an `$or`
+ * clause that matches `q` against the crop name, variety and district — the
+ * buyer-facing "search bar" behaviour, on top of the exact filters below.
+ */
+function buildSearchFilter({ q, crop, district, organic, status, minQty, priceMin, priceMax }) {
+  const filter = buildFilter({ crop, district, organic, status, minQty, priceMin, priceMax });
+  if (q) {
+    const regex = { $regex: escapeRegex(q), $options: 'i' };
+    filter.$and = [{ $or: [{ crop: regex }, { variety: regex }, { 'location.district': regex }] }];
   }
   return filter;
 }
@@ -109,6 +125,38 @@ async function createListing(user, data) {
 async function listListings(query, user) {
   const { crop, district, organic, status, minQty, priceMin, priceMax, sort, page, limit } = query;
   const filter = buildFilter({ crop, district, organic, status, minQty, priceMin, priceMax });
+  const [docs, total] = await Promise.all([
+    CropListing.find(filter)
+      .sort(SORT_MAP[sort] || SORT_MAP.newest)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate(POPULATE_FARMER)
+      .populate(POPULATE_FPO),
+    CropListing.countDocuments(filter),
+  ]);
+  return {
+    items: docs.map((doc) => shapeListing(doc, user)),
+    page,
+    limit,
+    total,
+    totalPages: Math.ceil(total / limit),
+  };
+}
+
+/** GET /listings/search (Phase 03) — buyer-facing search, same envelope. */
+async function searchListings(query, user) {
+  const { q, crop, district, organic, status, minQty, priceMin, priceMax, sort, page, limit } =
+    query;
+  const filter = buildSearchFilter({
+    q,
+    crop,
+    district,
+    organic,
+    status,
+    minQty,
+    priceMin,
+    priceMax,
+  });
   const [docs, total] = await Promise.all([
     CropListing.find(filter)
       .sort(SORT_MAP[sort] || SORT_MAP.newest)
@@ -251,11 +299,13 @@ async function getMyListings(user, query) {
 module.exports = {
   createListing,
   listListings,
+  searchListings,
   getListing,
   updateListing,
   softDelete,
   addImages,
   getMyListings,
   buildFilter, // exported for unit verification (scripts)
+  buildSearchFilter, // exported for unit verification (scripts)
   normalizeCrop,
 };

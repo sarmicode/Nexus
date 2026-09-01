@@ -5,6 +5,9 @@ const userRoutes = require('./user.routes');
 const listingRoutes = require('./listing.routes');
 const fpoRoutes = require('./fpo.routes');
 const farmerRoutes = require('./farmer.routes');
+const watchlistRoutes = require('./watchlist.routes');
+const savedSearchRoutes = require('./saved-search.routes');
+const leadRoutes = require('./lead.routes');
 
 const router = Router();
 
@@ -15,5 +18,8 @@ router.use('/users', userRoutes);
 router.use('/listings', listingRoutes);
 router.use('/fpos', fpoRoutes);
 router.use('/farmer', farmerRoutes);
+router.use('/watchlist', watchlistRoutes);
+router.use('/saved-searches', savedSearchRoutes);
+router.use('/leads', leadRoutes);
 
 module.exports = router;

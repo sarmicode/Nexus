@@ -10,6 +10,7 @@ const asyncHandler = require('../../common/utils/asyncHandler');
 const ApiError = require('../../common/utils/ApiError');
 const CropListing = require('../models/crop-listing.model');
 const Fpo = require('../models/fpo.model');
+const Lead = require('../models/lead.model');
 
 const ownsOrAdmin = (ownerId, user) =>
   String(ownerId) === String(user._id) || user.role === 'admin';
@@ -34,4 +35,21 @@ const requireFpoOwner = asyncHandler(async (req, res, next) => {
   next();
 });
 
-module.exports = { requireListingOwner, requireFpoOwner };
+/**
+ * requireLeadOwner — a lead may only be updated by the farmer who owns the
+ * listing it targets (admins bypass). Attaches the loaded lead to req.lead so
+ * the controller/service reuses it.
+ */
+const requireLeadOwner = asyncHandler(async (req, res, next) => {
+  const lead = await Lead.findById(req.params.id);
+  if (!lead) throw ApiError.notFound('Enquiry not found');
+  const listing = await CropListing.findById(lead.listingId);
+  if (!listing || listing.deletedAt) throw ApiError.notFound('Listing not found');
+  if (!ownsOrAdmin(listing.farmerId, req.user)) {
+    throw ApiError.forbidden('You can only manage enquiries on your own listings');
+  }
+  req.lead = lead;
+  next();
+});
+
+module.exports = { requireListingOwner, requireFpoOwner, requireLeadOwner };

@@ -12,7 +12,8 @@
     "dev:db": "node src/scripts/devMongo.js",
     "seed:admin": "node src/scripts/seedAdmin.js",
     "verify:auth": "node scripts/verify-auth.js",
-    "verify:listings": "node scripts/verify-listings.js"
+    "verify:listings": "node scripts/verify-listings.js",
+    "verify:buyer": "node scripts/verify-buyer.js"
   },
   "engines": {
     "node": ">=20"

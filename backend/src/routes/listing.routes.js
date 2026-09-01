@@ -5,9 +5,11 @@
  * invalid :id never reaches Mongoose).
  */
 const { Router } = require('express');
+const { createLead } = require('../controllers/lead.controller');
 const {
   createListing,
   listListings,
+  searchListings,
   getListing,
   updateListing,
   deleteListing,
@@ -22,14 +24,32 @@ const {
   createListingSchema,
   updateListingSchema,
   listListingsQuery,
+  searchListingsQuery,
   idParams,
 } = require('../validators/listing.validator');
+const { createLeadSchema } = require('../validators/lead.validator');
 
 const router = Router();
 
 // Public (authenticateOptional so owners get isOwner + draft visibility).
 router.get('/', authenticateOptional, validate({ query: listListingsQuery }), listListings);
+// Buyer-facing search — declared before /:id so "search" isn't treated as an id.
+router.get(
+  '/search',
+  authenticateOptional,
+  validate({ query: searchListingsQuery }),
+  searchListings
+);
 router.get('/:id', authenticateOptional, validate({ params: idParams }), getListing);
+
+// Buyer-only: send an enquiry (RFQ) on a listing.
+router.post(
+  '/:id/leads',
+  authenticate,
+  requireRole('buyer'),
+  validate({ params: idParams, body: createLeadSchema }),
+  createLead
+);
 
 // Farmer-only.
 router.post(

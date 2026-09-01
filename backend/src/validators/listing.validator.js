@@ -105,9 +105,16 @@ const listListingsQuery = z.object({
   minQty: z.coerce.number().min(0, 'minQty must be 0 or more').optional(),
   priceMin: z.coerce.number().min(0, 'priceMin must be 0 or more').optional(),
   priceMax: z.coerce.number().min(0, 'priceMax must be 0 or more').optional(),
-  sort: z.enum(['newest', 'oldest', 'priceAsc', 'priceDesc']).default('newest'),
+  sort: z
+    .enum(['newest', 'oldest', 'priceAsc', 'priceDesc', 'qtyAsc', 'qtyDesc'])
+    .default('newest'),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
+// Phase 03 (Buyer Module) search: `q` — full-text-ish across crop/variety/district.
+const searchListingsQuery = listListingsQuery.extend({
+  q: z.string().trim().max(120).optional(),
 });
 
 const myListingsQuery = z.object({
@@ -122,6 +129,7 @@ module.exports = {
   createListingSchema,
   updateListingSchema,
   listListingsQuery,
+  searchListingsQuery,
   myListingsQuery,
   idParams,
 };
