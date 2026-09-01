@@ -35,4 +35,18 @@ const authenticate = asyncHandler(async (req, res, next) => {
   next();
 });
 
-module.exports = { authenticate };
+/**
+ * authenticateOptional — public routes that adapt to the caller: with a valid
+ * token `req.user` is set (e.g. to flag `isOwner` / allow a draft view),
+ * without one `req.user` stays null. An invalid token still 401s.
+ */
+const authenticateOptional = (req, res, next) => {
+  const header = req.headers.authorization || '';
+  if (!header) {
+    req.user = null;
+    return next();
+  }
+  return authenticate(req, res, next);
+};
+
+module.exports = { authenticate, authenticateOptional };

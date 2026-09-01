@@ -11,9 +11,11 @@ dist/
 build/
 out/
 
-# Uploads (folder stays, files don't)
+# Uploads (folders stay, files don't)
 backend/uploads/*
 !backend/uploads/.gitkeep
+!backend/uploads/listings/
+!backend/uploads/listings/.gitkeep
 
 # Logs
 *.log
