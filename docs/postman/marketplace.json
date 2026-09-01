@@ -1,0 +1,533 @@
+{
+  "info": {
+    "name": "FarmBridge — Phase 03 (Buyer Module)",
+    "description": "Postman collection for the Phase 03 buyer acceptance criteria (search, compare data, watchlist, saved searches, lead/RFQ flow).\n\nSetup (once):\n1. cd backend && cp .env.example .env\n2. npm run dev\n3. npm run seed:admin (optional)\n4. Set baseUrl variable.\n\nRun top-to-bottom. It registers a farmer + buyer, seeds a listing, then exercises search / watchlist / saved-search / lead endpoints. A buyer can only RFQ/watchlist; a farmer reads enquiries.\n\nNote: npm run verify:buyer is the scripted version of this flow for CI.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1"
+    },
+    {
+      "key": "password",
+      "value": "Passw0rd!phase3"
+    },
+    {
+      "key": "farmerPhone",
+      "value": "9876543213"
+    },
+    {
+      "key": "buyerPhone",
+      "value": "9876543214"
+    },
+    {
+      "key": "farmerAccess",
+      "value": ""
+    },
+    {
+      "key": "buyerAccess",
+      "value": ""
+    },
+    {
+      "key": "listingId",
+      "value": ""
+    },
+    {
+      "key": "leadId",
+      "value": ""
+    },
+    {
+      "key": "savedSearchId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Register Farmer",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "register"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Farmer Phase3\",\n  \"phone\": \"{{farmerPhone}}\",\n  \"password\": \"{{password}}\",\n  \"role\": \"farmer\",\n  \"location\": {\n    \"village\": \"Krishnanagar\",\n    \"district\": \"Nadia\",\n    \"state\": \"West Bengal\"\n  }\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "const j = pm.response.json();",
+              "pm.collectionVariables.set('farmerAccess', j.data.farmerAccess);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register Buyer",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "auth",
+            "register"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Buyer Phase3\",\n  \"phone\": \"{{buyerPhone}}\",\n  \"password\": \"{{password}}\",\n  \"role\": \"buyer\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "const j = pm.response.json();",
+              "pm.collectionVariables.set('buyerAccess', j.data.buyerAccess);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create a Listing (tomato / Nadia)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{farmerAccess}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/listings",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "listings"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"crop\": \"tomato\",\n  \"grade\": \"A\",\n  \"organic\": true,\n  \"quantity\": {\n    \"value\": 3,\n    \"unit\": \"quintal\"\n  },\n  \"priceType\": \"fixed\",\n  \"pricePerUnit\": 1500,\n  \"location\": {\n    \"village\": \"Krishnanagar\",\n    \"district\": \"Nadia\",\n    \"state\": \"West Bengal\"\n  }\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "const j = pm.response.json();",
+              "pm.collectionVariables.set('listingId', j.data.listingId);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search listings (q=tomato, district=Nadia)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/listings/search?q=tomato&district=Nadia",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "listings",
+            "search?q=tomato&district=Nadia"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Search listings sorted by price asc",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/listings/search?q=tomato&district=Nadia&sort=priceAsc",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "listings",
+            "search?q=tomato&district=Nadia&sort=priceAsc"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Search listings (qty sort)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/listings/search?q=tomato&sort=qtyDesc",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "listings",
+            "search?q=tomato&sort=qtyDesc"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Add to watchlist",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{buyerAccess}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/watchlist",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "watchlist"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"listingId\": \"{{listingId}}\",\n  \"note\": \"Compare later\"\n}"
+        }
+      }
+    },
+    {
+      "name": "List watchlist",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{buyerAccess}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/watchlist",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "watchlist"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Remove from watchlist",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{buyerAccess}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/watchlist/{{listingId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "watchlist",
+            "{{listingId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create saved search",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{buyerAccess}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/saved-searches",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "saved-searches"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"query\": {\n    \"q\": \"tomato\",\n    \"district\": \"Nadia\",\n    \"sort\": \"priceAsc\"\n  },\n  \"alertsEnabled\": true\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "const j = pm.response.json();",
+              "pm.collectionVariables.set('savedSearchId', j.data.savedSearchId);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List saved searches",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{buyerAccess}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/saved-searches",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "saved-searches"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Delete saved search",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{buyerAccess}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/saved-searches/{{savedSearchId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "saved-searches",
+            "{{savedSearchId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Send enquiry (RFQ) on listing",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{buyerAccess}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/listings/{{listingId}}/leads",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "listings",
+            "{{listingId}}",
+            "leads"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Please quote for weekly supply\",\n  \"quantityWanted\": 2,\n  \"quantityUnit\": \"quintal\",\n  \"priceOffered\": 1400\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', () => pm.response.to.have.status(201));",
+              "const j = pm.response.json();",
+              "pm.collectionVariables.set('leadId', j.data.leadId);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List farmer leads (inbox)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{farmerAccess}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/farmer/me/leads",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "farmer",
+            "me",
+            "leads"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Update lead status (contacted)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{farmerAccess}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/leads/{{leadId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "leads",
+            "{{leadId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"contacted\"\n}"
+        }
+      }
+    },
+    {
+      "name": "List my leads (buyer)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{buyerAccess}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/leads/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "leads",
+            "me"
+          ]
+        }
+      }
+    }
+  ]
+}

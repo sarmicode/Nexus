@@ -1,17 +1,17 @@
 # 🧠 PROJECT_STATE.md — Living Memory of the Project
 
-> **The next chat session knows ONLY what is written here.** Update this file at the end of every phase (see `PROMPT.md` → Phase Completion Protocol). Last updated: **2026-09-01 (Phase 02 built, DB E2E pending)**.
+> **The next chat session knows ONLY what is written here.** Update this file at the end of every phase (see `PROMPT.md` → Phase Completion Protocol). Last updated: **2026-09-01 (Phase 03 built, DB E2E pending)**.
 
 ## Current Snapshot
 
 | | |
 |---|---|
-| **Active phase** | Phase 02 — Farmer Module (Listings, FPO & Uploads) |
-| **Phase status** | 🟡 PARTIAL — code complete (backend + frontend), lint/build clean; DB-dependent acceptance criteria pending a reachable MongoDB (same egress blocker as Phase 01) |
-| **App runs?** | ✅ Yes — backend `:5000` + frontend `:5173` (auth + listing pages render; data APIs need MongoDB) |
+| **Active phase** | Phase 03 — Buyer Module (Discovery, Compare & Watchlist) |
+| **Phase status** | 🟡 PARTIAL — code complete (backend + frontend), lint/build clean; DB-dependent acceptance criteria pending a reachable MongoDB (same egress blocker as Phases 01–02) |
+| **App runs?** | ✅ Yes — backend `:5000` + frontend `:5173` (catalog/buyer/farmer pages render; data APIs need MongoDB) |
 | **Deployed?** | ❌ Not yet (Phase 08) |
 | **Live URLs** | — |
-| **Session branch** | `arena/01a05bc9-nexus` (Arena-pinned; NOT merged — owner's call) |
+| **Session branch** | `arena/01a05c25-nexus` (Arena-pinned; NOT merged — owner's call) |
 
 ## Completed Phases
 
@@ -30,6 +30,10 @@
   1. a reachable MongoDB (as above),
   2. `cd backend && npm run verify:listings` → all PASS (this is the committed Phase 02 acceptance matrix),
   3. tick the Phase 02 acceptance boxes, set `✅ DONE`, run the Phase Completion Protocol (handoff to Phase 03).
+- **Phase 03 (🟡) — remaining:** DB-dependent E2E verification (identical blocker):
+  1. a reachable MongoDB (as above),
+  2. `cd backend && npm run verify:buyer` → all PASS (this is the committed Phase 03 acceptance matrix),
+  3. tick the Phase 03 acceptance boxes, set `✅ DONE`, run the Phase Completion Protocol (handoff to Phase 04 — Market Intelligence).
 
 ## Environment Variables Added So Far
 
@@ -78,13 +82,25 @@
 | 26 | Phase 02 | `GET /listings` & `GET /listings/:id` use `authenticateOptional`: public by default, but a valid token gets `isOwner` + draft visibility; drafts hidden from anonymous view | Public marketplace + owner tooling on the same endpoints |
 | 27 | Phase 02 | Upload rules: jpg/png/webp only (MIME), ≤ 3 MB each, ≤ 5 per request AND ≤ 5 total on a listing; random filenames with extension derived from the whitelisted MIME type (never the client filename) | SECURITY.md upload policy; no extension spoofing |
 | 28 | Phase 02 | `npm run verify:listings` — committed E2E acceptance matrix (backend/scripts/verify-listings.js) mirroring `verify:auth` | One-command acceptance for Phase 02; sandboxes/CI parity |
+| 29 | Phase 03 | Search is a dedicated `GET /listings/search` (not overloading `/listings`); `q` regex-matches crop, variety and `location.district`, layered on the existing `buildFilter`. Added `qtyAsc`/`qtyDesc` to the shared sort map | Clean buyer-facing search surface; `q` is full-text-ish, exact filters stay on `/listings` |
+| 30 | Phase 03 | Lead (RFQ) stores `quantityWanted` (Number) + `quantityUnit` (enum) rather than a nested quantity object | The RFQ form sends a plain amount + unit; keeps the model flat |
+| 31 | Phase 03 | Anti-spam: lead creation under a strict 10/15-min per-IP limiter (mirrors Phase 01 auth limiter) + a 24 h duplicate-lead window (one buyer+listing) → 409 | Blocks enquiry spam while keeping the RFQ flow frictionless |
+| 32 | Phase 03 | Lead status changes are farmer/admin-only, via a new `requireLeadOwner` middleware (loads the lead, verifies the target listing's `farmerId`); `GET /leads/me` added for the buyer's own enquiries | Buyer Dashboard needs the buyer's RFQs; one authorization path for the inbox |
+| 33 | Phase 03 | Compare is purely a frontend concern (CompareTable): the API returns listings, the client builds the side-by-side & unit-normalizes price to ₹/kg; "mandi modal price" column is a Phase 4 placeholder | No duplication of listing data; comparison is presentation logic |
+| 34 | Phase 03 | Saved searches store a loose `query` record (the exact `/listings/search` params) so the search can be recreated from the URL query string; `alertsEnabled` is stored now, used by Phase 4 | Phase 3 acceptance: "saved search recreated from URL query" |
+| 35 | Phase 03 | Watchlist + saved-searches are available to any authenticated user (not buyer-only); **RFQ creation** is buyer-role-gated. Watchlist unique per buyer+listing | A farmer may also shortlist/research buyers; the RFQ itself is a buyer action |
+| 36 | Phase 03 | `.content` width widened to 1000px (narrow cards keep their own max-width, so auth/profile pages stay centered) | The catalog + compare need a wider canvas than the original 760px |
+| 37 | Phase 03 | `npm run verify:buyer` — committed E2E acceptance matrix (backend/scripts/verify-buyer.js) mirroring the prior verify scripts | One-command acceptance for Phase 03; sandboxes/CI parity |
 
 ## Known Issues / TODO
 
 - [ ] **Close Phase 01:** run `npm run verify:auth` against a real MongoDB (see Remaining Tasks) — blocked in the build sandbox by egress (MongoDB CDN unreachable)
 - [ ] **Close Phase 02:** run `npm run verify:listings` against a real MongoDB — same blocker
-- [ ] **Merge `arena/01a05757-nexus`** (Phase 00 + Phase 01 work) into `main` — owner's action; nothing has been merged. Phase 02 lives on `arena/01a05bc9-nexus`.
+- [ ] **Close Phase 03:** run `npm run verify:buyer` against a real MongoDB — same blocker
+- [ ] **Merge the Arena session branches into `main`** — owner's action; nothing has been merged. Phases 00–03 work lives on the Arena-pinned branches (`arena/01a05757-nexus`, `arena/01a05bc9-nexus`, `arena/01a05c25-nexus`); all are NOT merged.
 - [ ] Photo removal on edit is add-only in Phase 2 (deleting an individual image lands with a later phase)
+- [ ] Lead dedupe window is fixed at 24 h (hard-coded) and the lead limiter window/count are hard-coded (10/15 min) like the Phase 01 auth limiter — make env-tunable in a later hardening pass if needed
+- [ ] `alertsEnabled` on saved searches is stored but not yet acted on (Phase 4 wires price alerts)
 - [ ] Finalize product name
 - [ ] Choose payment gateway (suggested: Razorpay test mode)
 - [ ] Choose SMS/email providers (free tiers fine)
@@ -105,6 +121,10 @@
 | **Phase 02:** live curl — `POST /listings` no-token/garbage-token → 401, bad `:id` → 400 `VALIDATION_ERROR`, public `GET /listings` with DB down → clean 500 envelope, 404 catch-all, `/uploads` static route | live curl | Phase 02 build |
 | **Phase 02:** Vite `/api` + `/uploads` proxy confirmed live (health via proxy → 200); SPA deep-link serves index | live curl | Phase 02 build |
 | **NOT yet verifiable here (Phase 02):** create listing + image upload round-trip, 403 RBAC on listings/fpos, pagination, dashboard stats, upload rejections live, image content-type | — | closes via `npm run verify:listings` |
+| **Phase 03 lint/build:** ESLint 10 + Prettier + production build clean in both apps; `docs/postman/marketplace.json` (16 requests) validates | npm scripts | Phase 03 build |
+| **Phase 03 unit checks (no DB):** `buildSearchFilter` (`q` → `$or` on crop/variety/district atop `buildFilter`), `searchListingsQuery` coercion (sort/page/limit), `createLeadSchema` (qty/price coercion + invalid-body rejection), `addWatchlistSchema` (id), `createSavedSearchSchema` (query record) | node scripts | Phase 03 build |
+| **Phase 03 live curl (DB down):** public `GET /listings/search` → clean 500 `INTERNAL_ERROR` envelope; `POST /listings/:id/leads`, `/watchlist`, `/saved-searches`, `/leads/me`, `PATCH /leads/:id` all → 401 without token; 404 catch-all `/nope`; Vite `/api` proxy (health → 200) + `/catalog` SPA deep-link → 200 | live curl + Vite proxy | Phase 03 build |
+| **NOT yet verifiable here (Phase 03):** search hits/sort correctness, RFQ inbox round-trip, watchlist persist, saved-search re-run, 409 dup lead/watchlist, 403 RBAC on leads | — | closes via `npm run verify:buyer` |
 
 ## API Surface Built So Far
 
@@ -130,3 +150,14 @@
 | GET | `/api/v1/fpos` | optional | public list (district/state filters + pagination) |
 | GET | `/api/v1/fpos/:id` | optional | FPO detail |
 | PATCH | `/api/v1/fpos/:id` | bearer + owner | update FPO (verify lands in Phase 7) |
+| GET | `/api/v1/listings/search` | optional | buyer search `q` across crop/variety/district + filters + sort (+`qtyAsc`/`qtyDesc`) + pagination → `{ items, page, limit, total, totalPages }` |
+| POST | `/api/v1/watchlist` | bearer | add `{ listingId, note? }` (409 dup, 404 missing) |
+| GET | `/api/v1/watchlist` | bearer | paginated watchlist (populated listing) |
+| DELETE | `/api/v1/watchlist/:listingId` | bearer | remove entry |
+| POST | `/api/v1/saved-searches` | bearer | `{ query, alertsEnabled? }` |
+| GET | `/api/v1/saved-searches` | bearer | paginated saved searches |
+| DELETE | `/api/v1/saved-searches/:id` | bearer + owner | delete |
+| POST | `/api/v1/listings/:id/leads` | bearer + `buyer` | send RFQ `{ message, quantityWanted, quantityUnit, priceOffered? }` (24 h dedupe → 409; strict limiter) |
+| GET | `/api/v1/farmer/me/leads` | bearer + `farmer` | farmer enquiry inbox (paginated, optional status filter) |
+| GET | `/api/v1/leads/me` | bearer + `buyer` | buyer's own enquiries (paginated) |
+| PATCH | `/api/v1/leads/:id` | bearer + owner/admin | move status `new|contacted|converted|dropped` |

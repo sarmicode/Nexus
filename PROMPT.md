@@ -13,9 +13,9 @@
 | | |
 |---|---|
 | **Project** | FarmBridge — Farmer–Buyer Marketplace (SIH 2026 · SIH26132) |
-| **Active phase** | `PHASE-02 — Farmer Module (Listings, FPO & Uploads)` (PARTIAL — finishing) |
-| **Phase doc** | [`docs/phases/PHASE-02-farmer-module.md`](docs/phases/PHASE-02-farmer-module.md) |
-| **Build state** | Phase 02 **code is complete** (Fpo + CropListing models, listings CRUD + public filters, Multer image upload ≤5 × ≤3MB jpg/png/webp → `backend/uploads/listings/`, FPO endpoints, ownership middleware, zod validators, `verify:listings` matrix, Farmer Dashboard + Add/Edit form + public ListingDetail UI) — lint/build clean, pushed. **Remaining: DB-dependent E2E verification + closing the phase.** ⚠️ Blocker in the build sandbox: egress blocks MongoDB's CDN, so no `mongod` binary is downloadable there. On any machine with normal internet the finish is 3 commands — see "Remaining tasks" below. Phase 01 is also still 🟡 for the same reason (its DB E2E can be closed in the same session). |
+| **Active phase** | `PHASE-03 — Buyer Module (Discovery, Compare & Watchlist)` (PARTIAL — closing) |
+| **Phase doc** | [`docs/phases/PHASE-03-buyer-module.md`](docs/phases/PHASE-03-buyer-module.md) |
+| **Build state** | Phase 03 **code is complete** (≈ full backend + frontend: `GET /listings/search` w/ `q` + filters + `qtyAsc/qtyDesc` sort + pagination; `Watchlist`, `SavedSearch`, `Lead` models + endpoints; 24 h lead dedupe (409) + strict 10/15-min lead limiter; `requireLeadOwner`; `verify:buyer` matrix + `docs/postman/marketplace.json`; Catalog, CompareTable, RFQ form + watchlist toggle on ListingDetail, Buyer Dashboard, Farmer "Enquiries" tab) — lint/build clean, `verify:buyer` committed, pushed. **Remaining: DB-dependent E2E verification + closing the phase.** ⚠️ Blocker (unchanged): the build sandbox's egress blocks MongoDB's CDN, so no `mongod` binary is downloadable there. On any machine with normal internet the finish is a few commands — see "Remaining tasks" below. Phases 01, 02, 03 are all 🟡 for the same reason. |
 | **Repo** | Monorepo: `frontend/` (React+Vite) · `backend/` (Express) — see `docs/PROJECT_BLUEPRINT.md` |
 
 ---
@@ -32,18 +32,18 @@ You are the development agent for **FarmBridge**, a farmer–buyer marketplace s
 
 1. `RULES.md` — non-negotiable development & agent rules
 2. `docs/PROJECT_STATE.md` — everything built so far + decisions log
-3. `docs/phases/PHASE-02-farmer-module.md` — **the phase you must FINISH now** (its "Remaining Tasks" section)
+3. `docs/phases/PHASE-03-buyer-module.md` — **the phase you must FINISH now** (its "Remaining Tasks" section)
 4. `docs/PROJECT_BLUEPRINT.md` — the architecture you must conform to (MERN: React+Vite frontend, Node/Express backend, MongoDB + Redis, optional Python ML service)
 
-**Your job this session — finish Phase 02 (and close Phase 01 along the way):**
+**Your job this session — finish Phase 03 (and close Phases 01 & 02 along the way):**
 
 - Get a MongoDB running that the API can reach, in order of preference:
   (a) a `MONGO_URI` the owner provides (local or free Atlas M0 — put it in `backend/.env`),
   (b) `cd backend && npm run dev:db` (in-memory dev Mongo; downloads the official binary once — needs normal internet),
-  (c) if **no** MongoDB is reachable, do the rest of the work and keep the phase 🟡 with the same blocker noted (never fabricate "done").
-- Close Phase 01 first: run `cd backend && npm run seed:admin` (needs `ADMIN_PHONE`/`ADMIN_PASSWORD` in `backend/.env` — set dev values if blank) then `npm run verify:auth` until all PASS.
-- Then Phase 02: run `cd backend && npm run verify:listings` — the scripted acceptance matrix. Fix any FAIL at the source (code, not the script) and re-run until all PASS.
-- Then: tick the Phase 02 acceptance boxes in its doc, set Status `✅ DONE`, and run the full Phase Completion Protocol (steps 1–8) — that closes Phase 02 and regenerates this file for **Phase 03 — Buyer Module**.
+  (c) if **no** MongoDB is reachable, do the rest and keep the phase 🟡 with the same blocker noted (never fabricate "done").
+- Close Phases 01 & 02 first (they're code-complete but unverified): run `cd backend && npm run seed:admin` (needs `ADMIN_PHONE`/`ADMIN_PASSWORD` in `backend/.env` — set dev values if blank) then `npm run verify:auth` and `npm run verify:listings` until all PASS.
+- Then Phase 03: run `cd backend && npm run verify:buyer` — the scripted acceptance matrix. Fix any FAIL at the source (code, not the script) and re-run until all PASS.
+- Then: tick the Phase 03 acceptance boxes in its doc, set Status `✅ DONE`, and run the full Phase Completion Protocol (steps 1–8) — that closes Phase 03 and regenerates this file for **Phase 04 — Market Intelligence (Mandi Price Discovery)**.
 - Follow every rule in `RULES.md` (branch + commit style, API envelope `/api/v1`, validation, security, docs).
 - 🚫 **HARD RULE — NEVER MERGE:** do not merge any branch or PR (into `main` or anywhere else). Work on your phase branch, commit and push **that branch only**, and tell the user it is ready for merge. The only exception is an explicit merge order from the user in the current chat.
 - Keep the README quick start working at all times.
@@ -112,4 +112,4 @@ _Agent: when you rewrite `PROMPT.md`, keep this template at the bottom (unchange
 
 ---
 
-*Last regenerated: 2026-09-01 · Phase 02 PARTIAL — code complete, DB E2E verification pending (MongoDB unreachable from build sandbox; verified without DB: lint/build, zod + upload unit checks, live 401/400/clean-500/404, /uploads + Vite proxies)*
+*Last regenerated: 2026-09-01 · Phase 03 PARTIAL — code complete, DB E2E verification pending (MongoDB CDN unreachable from the build sandbox; verified without DB: lint/build, zod + `buildSearchFilter` unit checks, live 401 on protected endpoints / clean-500 on public search, Vite `/api` proxy, SPA `/catalog` deep-link, Postman collection 16 reqs). Phase 01 + Phase 02 remain 🟡 for the same reason — their E2E closes in this same session.*
