@@ -1,0 +1,2 @@
+# Phase 01 adds AuthContext / UserContext here (RULES.md §5 — global state
+# only via src/context/). Phase 00 has no global state yet.

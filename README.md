@@ -81,8 +81,8 @@ This repo is built **phase by phase, each phase in a fresh chat/agent session**.
 
 | Phase | Scope | Doc | Status |
 |---|---|---|---|
-| 0 | Foundation & repo bootstrap | [PHASE-00](docs/phases/PHASE-00-foundation.md) | ⬜ In progress |
-| 1 | Auth & user management (JWT, RBAC) | [PHASE-01](docs/phases/PHASE-01-auth-users.md) | ⬜ |
+| 0 | Foundation & repo bootstrap | [PHASE-00](docs/phases/PHASE-00-foundation.md) | ✅ |
+| 1 | Auth & user management (JWT, RBAC) | [PHASE-01](docs/phases/PHASE-01-auth-users.md) | 🟡 (built; DB E2E verification pending — see `docs/PROJECT_STATE.md`) |
 | 2 | Farmer module (listings, FPO, uploads) | [PHASE-02](docs/phases/PHASE-02-farmer-module.md) | ⬜ |
 | 3 | Buyer module (search, compare, watchlist) | [PHASE-03](docs/phases/PHASE-03-buyer-module.md) | ⬜ |
 | 4 | Market intelligence & price discovery | [PHASE-04](docs/phases/PHASE-04-market-intelligence.md) | ⬜ |
@@ -121,17 +121,36 @@ phase branch → updates STATE + LOG → REGENERATES PROMPT.md for the next phas
 # Backend  (http://localhost:5000)
 cd backend
 npm install
-cp .env.example .env      # fill in values
+cp .env.example .env      # local dev defaults included — set real values for real environments
 npm run dev
+
+# MongoDB — pick ONE:
+#   a) local MongoDB / free Atlas M0 (see docs/FREE_TIER_PLAN.md) — set MONGO_URI in backend/.env
+#   b) no mongod installed? dev-only in-memory Mongo on :27017 (data resets on stop):
+cd backend && npm run dev:db
+
+# (optional) seed the first admin — set ADMIN_PHONE + ADMIN_PASSWORD in backend/.env first
+cd backend && npm run seed:admin
 
 # Frontend (http://localhost:5173) — new terminal
 cd frontend
 npm install
 cp .env.example .env
 npm run dev
+# open http://localhost:5173 — register as farmer/buyer, or sign in
 ```
 
-> Run frontend and backend on separate ports. Use Postman for API testing. Never commit `.env` files.
+> Run frontend and backend on separate ports. Never commit `.env` files.
+> The frontend calls the API at the **relative** path `/api/v1/…`; the Vite dev server proxies
+> `/api` → `http://localhost:5000` (see `frontend/vite.config.js`). The API boots even when
+> MongoDB is down and reports the db state via `GET /api/v1/health`.
+
+### API testing
+
+- **Postman collection:** `docs/postman/auth.json` (Phase 01 auth & users — set the
+  `adminPhone` / `adminPassword` variables to match `backend/.env` and run `npm run seed:admin` first).
+- **Scripted acceptance matrix:** `cd backend && npm run verify:auth` (needs a running backend
+  + real MongoDB; prints PASS/FAIL per criterion).
 
 ### Environment variables
 
@@ -140,9 +159,14 @@ npm run dev
 | Key | Example |
 |---|---|
 | `PORT` | `5000` |
-| `MONGO_URI` | `mongodb://localhost:27017/marketplace` |
-| `JWT_SECRET` | `your_jwt_secret` |
+| `NODE_ENV` | `development` |
+| `MONGO_URI` | `mongodb://127.0.0.1:27017/farmbridge` |
+| `JWT_SECRET` | *strong random secret (≥ 32 chars) in real environments* |
+| `JWT_ACCESS_TTL` / `JWT_REFRESH_TTL` | `15m` / `7d` |
+| `ADMIN_PHONE` / `ADMIN_PASSWORD` | `9876543210` / *strong password* (for `npm run seed:admin`) |
 | `REDIS_URL` | `redis://localhost:6379` |
+| `CORS_ORIGIN` | `http://localhost:5173` (production allowlist) |
+| `RATE_LIMIT_WINDOW_MS` / `RATE_LIMIT_MAX` | `900000` / `100` |
 | `EMAIL_API_KEY` | `your_email_api_key` |
 | `SMS_API_KEY` | `your_sms_api_key` |
 | `PAYMENT_API_KEY` | `your_payment_key` |
@@ -152,8 +176,8 @@ npm run dev
 
 | Key | Example |
 |---|---|
-| `VITE_API_BASE_URL` | `http://localhost:5000/api` |
-| `VITE_MAPS_API_KEY` | `your_maps_key` |
+| `VITE_API_BASE_URL` | `/api/v1` (relative — Vite proxies to `:5000`; or a full URL for a deployed backend) |
+| `VITE_MAPS_API_KEY` | *(optional — Leaflet/OSM needs no key)* |
 
 ---
 
