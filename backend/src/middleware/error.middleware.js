@@ -22,6 +22,16 @@ function errorHandler(err, req, res, _next) {
   if (err.type === 'entity.too.large') {
     err = ApiError.badRequest('Request body too large (limit 1 MB)');
   }
+  // Multer upload errors (Phase 02) → clear 400s.
+  if (err && err.code === 'LIMIT_FILE_SIZE') {
+    err = ApiError.badRequest('Image too large (max 3 MB each)');
+  }
+  if (err && err.code === 'LIMIT_FILE_COUNT') {
+    err = ApiError.badRequest('Too many images (max 5 per request)');
+  }
+  if (err && err.code === 'LIMIT_UNEXPECTED_FILE') {
+    err = ApiError.badRequest('Unexpected file field — use "images"');
+  }
   // Database unreachable (no mongod / Atlas down / queued op timed out) —
   // clean message, no internals (collection names, driver errors, …).
   const isDbDown =

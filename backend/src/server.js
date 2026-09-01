@@ -6,6 +6,7 @@
  * routing under /api/v1, 404 catch-all, central error handling.
  * Business logic lives in src/services/, kept thin in src/controllers/.
  */
+const path = require('path');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -40,6 +41,10 @@ app.use(morgan(config.isProduction ? 'combined' : 'dev'));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 app.use(compression());
+
+// Uploaded listing images (Phase 02) — served from backend/uploads. The Vite
+// dev server proxies /uploads to here; deployed envs swap to Cloudinary.
+app.use('/uploads', express.static(path.resolve(__dirname, '..', 'uploads')));
 
 // ── Rate limiting (abuse protection from day one, SECURITY.md) ──────────
 app.use(
