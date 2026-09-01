@@ -1,10 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { getListing } from '../services/listings';
+import { createLead } from '../services/leads';
+import { addToWatchlist, removeFromWatchlist } from '../services/watchlist';
+import { useAuth } from '../context/AuthContext';
 import { assetUrl } from '../utils/assetUrl';
 import StatusChip from '../components/StatusChip';
+import Field from '../components/Field';
 
 const UNIT_LABELS = { quintal: 'quintal', kg: 'kg', tonne: 'tonne' };
+const QUANTITY_UNITS = [
+  ['quintal', 'Quintal'],
+  ['kg', 'Kilogram (kg)'],
+  ['tonne', 'Tonne'],
+];
 const PRICE = new Intl.NumberFormat('en-IN', {
   style: 'currency',
   currency: 'INR',
@@ -20,16 +29,33 @@ function titleCase(value) {
 }
 
 /**
- * ListingDetail — public view of a crop listing with an image gallery and a
- * "seller" card (farmer name, location, optional FPO badge). Phase 02.
+ * ListingDetail — public view of a crop listing (Phase 02) extended with the
+ * Phase 03 buyer actions: "Send enquiry (RFQ)" and a watchlist toggle.
+ * Unauthenticated users can browse; RFQ/watchlist redirect to login.
  */
 export default function ListingDetail() {
   const { id } = useParams();
-  // `loadedId` doubles as the loading flag: until a fetch resolves for the
-  // current id, the page shows the loading state. setState happens only in
-  // promise callbacks (never synchronously in the effect body).
+  const { isAuthed, role } = useAuth();
+  const navigate = useNavigate();
   const [state, setState] = useState({ listing: null, loadedId: null, error: null });
 
+  // RFQ form
+  const [rfq, setRfq] = useState({
+    quantityWanted: '',
+    quantityUnit: 'quintal',
+    message: '',
+    priceOffered: '',
+  });
+  const [rfqBusy, setRfqBusy] = useState(false);
+  const [rfqMsg, setRfqMsg] = useState(null); // { type: 'success'|'error', text }
+
+  // Watchlist
+  const [watchBusy, setWatchBusy] = useState(false);
+  const [watchMsg, setWatchMsg] = useState(null);
+
+  // `state.loadedId !== id` doubles as the loading flag: on a route change to a
+  // different id the page shows loading until the fetch resolves. setState only
+  // happens inside promise callbacks (never synchronously in the effect body).
   useEffect(() => {
     let active = true;
     getListing(id)
@@ -70,12 +96,65 @@ export default function ListingDetail() {
   }
 
   const qty = `${listing.quantity.value} ${UNIT_LABELS[listing.quantity.unit] || listing.quantity.unit}`;
+  const isOwner = listing.isOwner || role === 'farmer';
+  const canEnquire = isAuthed && role === 'buyer' && listing.status === 'active';
+  const needLogin = !isAuthed;
+
+  async function onSubmitRfq(e) {
+    e.preventDefault();
+    if (needLogin) {
+      navigate('/login');
+      return;
+    }
+    setRfqBusy(true);
+    setRfqMsg(null);
+    try {
+      await createLead(id, {
+        message: rfq.message,
+        quantityWanted: Number(rfq.quantityWanted),
+        quantityUnit: rfq.quantityUnit,
+        priceOffered: rfq.priceOffered ? Number(rfq.priceOffered) : undefined,
+      });
+      setRfqMsg({ type: 'success', text: 'Enquiry sent! The farmer will get back to you.' });
+      setRfq({ quantityWanted: '', quantityUnit: rfq.quantityUnit, message: '', priceOffered: '' });
+    } catch (err) {
+      setRfqMsg({ type: 'error', text: err.apiError?.message || err.message });
+    } finally {
+      setRfqBusy(false);
+    }
+  }
+
+  async function onToggleWatchlist() {
+    if (needLogin) {
+      navigate('/login');
+      return;
+    }
+    setWatchBusy(true);
+    setWatchMsg(null);
+    try {
+      await addToWatchlist(id);
+      setWatchMsg({ type: 'success', text: 'Added to your watchlist.' });
+    } catch (err) {
+      if (err.apiError?.status === 409) {
+        await removeFromWatchlist(id);
+        setWatchMsg({ type: 'success', text: 'Removed from your watchlist.' });
+      } else {
+        setWatchMsg({ type: 'error', text: err.apiError?.message || err.message });
+      }
+    } finally {
+      setWatchBusy(false);
+    }
+  }
 
   return (
     <article className="card card--wide">
       <p className="muted">
         <Link className="link" to="/">
           ← Home
+        </Link>
+        <span> · </span>
+        <Link className="link" to="/catalog">
+          Marketplace
         </Link>
       </p>
 
@@ -147,6 +226,102 @@ export default function ListingDetail() {
           </p>
         </aside>
       </div>
+
+      {!isOwner && (
+        <div className="rfq">
+          <div className="detail-head">
+            <h2>Send enquiry (RFQ)</h2>
+            <button
+              type="button"
+              className="btn btn--ghost btn--small"
+              onClick={onToggleWatchlist}
+              disabled={watchBusy}
+            >
+              {watchMsg?.type === 'success' ? '☆ Remove from watchlist' : '☆ Watchlist'}
+            </button>
+          </div>
+          {watchMsg && (
+            <div className={`alert alert--${watchMsg.type}`} role="alert">
+              {watchMsg.text}
+            </div>
+          )}
+
+          {needLogin ? (
+            <p className="muted">
+              <Link className="link" to="/login">
+                Log in
+              </Link>{' '}
+              as a buyer to send an enquiry or add to your watchlist.
+            </p>
+          ) : canEnquire ? (
+            <>
+              {rfqMsg && (
+                <div className={`alert alert--${rfqMsg.type}`} role="alert">
+                  {rfqMsg.text}
+                </div>
+              )}
+              <form onSubmit={onSubmitRfq} className="form-grid">
+                <Field label={`Quantity wanted (${UNIT_LABELS[listing.quantity.unit] || 'unit'})`}>
+                  <input
+                    type="number"
+                    className="input"
+                    min="0"
+                    step="any"
+                    required
+                    placeholder={String(listing.quantity.value)}
+                    value={rfq.quantityWanted}
+                    onChange={(e) => setRfq({ ...rfq, quantityWanted: e.target.value })}
+                  />
+                </Field>
+                <Field label="Unit">
+                  <select
+                    className="input"
+                    value={rfq.quantityUnit}
+                    onChange={(e) => setRfq({ ...rfq, quantityUnit: e.target.value })}
+                  >
+                    {QUANTITY_UNITS.map(([v, label]) => (
+                      <option key={v} value={v}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field label="Price offered (optional)">
+                  <input
+                    type="number"
+                    className="input"
+                    min="0"
+                    step="any"
+                    placeholder={`₹ / ${rfq.quantityUnit}`}
+                    value={rfq.priceOffered}
+                    onChange={(e) => setRfq({ ...rfq, priceOffered: e.target.value })}
+                  />
+                </Field>
+                <Field label="Message">
+                  <textarea
+                    className="input"
+                    rows="3"
+                    required
+                    placeholder="Tell the farmer what you're looking for…"
+                    value={rfq.message}
+                    onChange={(e) => setRfq({ ...rfq, message: e.target.value })}
+                  />
+                </Field>
+                <button
+                  type="submit"
+                  className="btn btn--primary"
+                  disabled={rfqBusy}
+                  style={{ gridColumn: '1 / -1' }}
+                >
+                  {rfqBusy ? 'Sending…' : 'Send enquiry'}
+                </button>
+              </form>
+            </>
+          ) : (
+            <p className="muted">You need a buyer account to enquire about this listing.</p>
+          )}
+        </div>
+      )}
     </article>
   );
 }

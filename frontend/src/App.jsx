@@ -7,8 +7,10 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import ListingDetail from './pages/ListingDetail';
+import Catalog from './pages/Catalog';
 import FarmerDashboard from './pages/farmer/FarmerDashboard';
 import ListingForm from './pages/farmer/ListingForm';
+import BuyerDashboard from './pages/buyer/BuyerDashboard';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -27,6 +29,17 @@ export default function App() {
           }
         />
         <Route path="listings/:id" element={<ListingDetail />} />
+        <Route path="catalog" element={<Catalog />} />
+        <Route
+          path="buyer"
+          element={
+            <ProtectedRoute>
+              <RoleRoute roles={['buyer']}>
+                <BuyerDashboard />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="farmer"
           element={

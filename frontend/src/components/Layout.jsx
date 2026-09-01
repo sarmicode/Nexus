@@ -32,9 +32,19 @@ export default function Layout() {
             Home
           </NavLink>
 
+          <NavLink to="/catalog" className={({ isActive }) => (isActive ? 'active' : '')}>
+            Marketplace
+          </NavLink>
+
           {isAuthed && (
             <NavLink to="/profile" className={({ isActive }) => (isActive ? 'active' : '')}>
               Profile
+            </NavLink>
+          )}
+
+          {isAuthed && user?.role === 'buyer' && (
+            <NavLink to="/buyer" className={({ isActive }) => (isActive ? 'active' : '')}>
+              Dashboard
             </NavLink>
           )}
 
