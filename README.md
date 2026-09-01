@@ -83,7 +83,7 @@ This repo is built **phase by phase, each phase in a fresh chat/agent session**.
 |---|---|---|---|
 | 0 | Foundation & repo bootstrap | [PHASE-00](docs/phases/PHASE-00-foundation.md) | ✅ |
 | 1 | Auth & user management (JWT, RBAC) | [PHASE-01](docs/phases/PHASE-01-auth-users.md) | 🟡 (built; DB E2E verification pending — see `docs/PROJECT_STATE.md`) |
-| 2 | Farmer module (listings, FPO, uploads) | [PHASE-02](docs/phases/PHASE-02-farmer-module.md) | ⬜ |
+| 2 | Farmer module (listings, FPO, uploads) | [PHASE-02](docs/phases/PHASE-02-farmer-module.md) | 🟡 (built; DB E2E verification pending) |
 | 3 | Buyer module (search, compare, watchlist) | [PHASE-03](docs/phases/PHASE-03-buyer-module.md) | ⬜ |
 | 4 | Market intelligence & price discovery | [PHASE-04](docs/phases/PHASE-04-market-intelligence.md) | ⬜ |
 | 5 | Matching & recommendations (+ ML API) | [PHASE-05](docs/phases/PHASE-05-matching-recommendations.md) | ⬜ |
@@ -149,8 +149,11 @@ npm run dev
 
 - **Postman collection:** `docs/postman/auth.json` (Phase 01 auth & users — set the
   `adminPhone` / `adminPassword` variables to match `backend/.env` and run `npm run seed:admin` first).
-- **Scripted acceptance matrix:** `cd backend && npm run verify:auth` (needs a running backend
-  + real MongoDB; prints PASS/FAIL per criterion).
+- **Scripted acceptance matrices:** `cd backend && npm run verify:auth` (Phase 01) and
+  `npm run verify:listings` (Phase 02) — each needs a running backend + real MongoDB; prints
+  PASS/FAIL per criterion.
+- **Listing images:** uploads land in `backend/uploads/listings/` and are served at
+  `/uploads/…` (the Vite dev server proxies `/uploads` to the backend).
 
 ### Environment variables
 
