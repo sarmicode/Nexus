@@ -38,6 +38,20 @@ export default function Layout() {
             </NavLink>
           )}
 
+          {isAuthed && user?.role === 'farmer' && (
+            <>
+              <NavLink to="/farmer" className={({ isActive }) => (isActive ? 'active' : '')}>
+                My Listings
+              </NavLink>
+              <NavLink
+                to="/farmer/listings/new"
+                className={({ isActive }) => (isActive ? 'active' : '')}
+              >
+                Add Listing
+              </NavLink>
+            </>
+          )}
+
           {initializing ? null : isAuthed ? (
             <button type="button" className="btn btn--ghost btn--small" onClick={onLogout}>
               Logout
