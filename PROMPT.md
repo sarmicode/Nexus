@@ -15,7 +15,7 @@
 | **Project** | FarmBridge — Farmer–Buyer Marketplace (SIH 2026 · SIH26132) |
 | **Active phase** | `PHASE-01 — Authentication & User Management` (PARTIAL — finishing) |
 | **Phase doc** | [`docs/phases/PHASE-01-auth-users.md`](docs/phases/PHASE-01-auth-users.md) |
-| **Build state** | Phase 01 **code is complete** (User/RefreshToken models, JWT + rotating refresh, RBAC, zod validation, strict auth rate limit, admin seed, Login/Register/Profile UI with silent refresh) — lint/build clean, pushed. **Remaining: DB-dependent E2E verification + closing the phase.** ⚠️ Blocker in the build sandbox: egress blocks MongoDB's CDN, so no `mongod` binary is downloadable there (verified: fastdl/downloads.mongodb.org unreachable; all npm "prebuilt" packages use the same CDN). On any machine with normal internet the finish is 3 commands — see "Remaining tasks" below. |
+| **Build state** | Phase 01 **code is complete** (User/RefreshToken models, JWT + rotating refresh, RBAC, zod validation, strict auth rate limit, admin seed, Login/Register/Profile UI with silent refresh) — lint/build clean. **Work is merged into `main` (PR #1, 2026-09-01, owner's order).** **Remaining: DB-dependent E2E verification + closing the phase** (start from `main`). ⚠️ Blocker in the build sandbox: egress blocks MongoDB's CDN, so no `mongod` binary is downloadable there (verified: fastdl/downloads.mongodb.org unreachable; all npm "prebuilt" packages use the same CDN). On any machine with normal internet the finish is 3 commands — see "Remaining tasks" below. |
 | **Repo** | Monorepo: `frontend/` (React+Vite) · `backend/` (Express) — see `docs/PROJECT_BLUEPRINT.md` |
 
 ---
@@ -113,4 +113,4 @@ _Agent: when you rewrite `PROMPT.md`, keep this template at the bottom (unchange
 
 ---
 
-*Last regenerated: 2026-08-31 · Phase 01 PARTIAL — code complete, DB E2E verification pending (MongoDB unreachable from build sandbox; dev:db retried, JWT error paths + npm audit verified live)*
+*Last regenerated: 2026-09-01 · Phase 01 PARTIAL — work merged to main (PR #1); DB E2E verification pending (MongoDB unreachable from build sandbox)*

@@ -11,7 +11,7 @@
 | **App runs?** | ✅ Yes — backend `:5000` + frontend `:5173` (auth pages render; API calls need MongoDB) |
 | **Deployed?** | ❌ Not yet (Phase 08) |
 | **Live URLs** | — |
-| **Session branch** | `arena/01a05757-nexus` (Arena-pinned; NOT merged — owner's call) |
+| **Session branch** | `arena/01a05757-nexus` (Arena-pinned). Phase 00 + 01 work **merged into `main` via PR #1** on 2026-09-01 (owner's explicit order). Start Phase 02+ work from `main`. |
 
 ## Completed Phases
 
@@ -68,7 +68,6 @@
 ## Known Issues / TODO
 
 - [ ] **Close Phase 01:** run `npm run verify:auth` against a real MongoDB (see Remaining Tasks) — blocked in the build sandbox by egress (MongoDB CDN unreachable; `dev:db` retried 2026-08-31, same TLS failure)
-- [ ] **Merge `arena/01a05757-nexus`** (Phase 00 + Phase 01 work) into `main` — owner's action; nothing has been merged
 - [ ] Finalize product name
 - [ ] Choose payment gateway (suggested: Razorpay test mode)
 - [ ] Choose SMS/email providers (free tiers fine)
