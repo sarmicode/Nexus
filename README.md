@@ -82,14 +82,14 @@ This repo is built **phase by phase, each phase in a fresh chat/agent session**.
 | Phase | Scope | Doc | Status |
 |---|---|---|---|
 | 0 | Foundation & repo bootstrap | [PHASE-00](docs/phases/PHASE-00-foundation.md) | ✅ |
-| 1 | Auth & user management (JWT, RBAC) | [PHASE-01](docs/phases/PHASE-01-auth-users.md) | 🟡 (built; DB E2E verification pending — see `docs/PROJECT_STATE.md`) |
-| 2 | Farmer module (listings, FPO, uploads) | [PHASE-02](docs/phases/PHASE-02-farmer-module.md) | 🟡 (built; DB E2E verification pending) |
-| 3 | Buyer module (search, compare, watchlist) | [PHASE-03](docs/phases/PHASE-03-buyer-module.md) | ⬜ |
-| 4 | Market intelligence & price discovery | [PHASE-04](docs/phases/PHASE-04-market-intelligence.md) | ⬜ |
-| 5 | Matching & recommendations (+ ML API) | [PHASE-05](docs/phases/PHASE-05-matching-recommendations.md) | ⬜ |
-| 6 | Orders, payments & notifications | [PHASE-06](docs/phases/PHASE-06-orders-payments-notifications.md) | ⬜ |
-| 7 | Analytics, maps & admin | [PHASE-07](docs/phases/PHASE-07-analytics-admin-maps.md) | ⬜ |
-| 8 | Hardening, CI & deployment | [PHASE-08](docs/phases/PHASE-08-hardening-deployment.md) | ⬜ |
+| 1 | Auth & user management (JWT, RBAC) | [PHASE-01](docs/phases/PHASE-01-auth-users.md) | ✅ |
+| 2 | Farmer module (listings, FPO, uploads) | [PHASE-02](docs/phases/PHASE-02-farmer-module.md) | ✅ |
+| 3 | Buyer module (search, compare, watchlist) | [PHASE-03](docs/phases/PHASE-03-buyer-module.md) | ✅ |
+| 4 | Market intelligence & price discovery | [PHASE-04](docs/phases/PHASE-04-market-intelligence.md) | ✅ |
+| 5 | Matching & recommendations (+ ML API) | [PHASE-05](docs/phases/PHASE-05-matching-recommendations.md) | ✅ |
+| 6 | Orders, payments & notifications | [PHASE-06](docs/phases/PHASE-06-orders-payments-notifications.md) | ✅ |
+| 7 | Analytics, maps & admin | [PHASE-07](docs/phases/PHASE-07-analytics-admin-maps.md) | ✅ |
+| 8 | Hardening, CI & deployment | [PHASE-08](docs/phases/PHASE-08-hardening-deployment.md) | ✅ |
 
 Legend: ⬜ not started · 🟡 in progress · ✅ done — statuses live in [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md)
 

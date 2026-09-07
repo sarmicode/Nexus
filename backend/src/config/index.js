@@ -19,7 +19,6 @@ if (env === 'production' && process.env.JWT_SECRET === DEV_JWT_PLACEHOLDER) {
 }
 
 if (problems.length > 0) {
-  // Fail fast — a misconfigured server is worse than no server.
   console.error('[config] refusing to start — fix backend/.env:');
   for (const problem of problems) console.error(`  - ${problem}`);
   process.exit(1);
@@ -30,7 +29,6 @@ const toPositiveInt = (value, fallback) => {
   return Number.isFinite(n) && n > 0 ? n : fallback;
 };
 
-/** Parse a duration like '15m', '1h', '7d', '90s' or bare seconds → ms. */
 const ttlToMs = (value, fallback) => {
   if (!value) return fallback;
   const n = parseInt(value, 10);
@@ -40,7 +38,7 @@ const ttlToMs = (value, fallback) => {
   if (value.endsWith('m')) return n * 60 * 1000;
   if (value.endsWith('h')) return n * 60 * 60 * 1000;
   if (value.endsWith('d')) return n * 24 * 60 * 60 * 1000;
-  return n * 1000; // bare number = seconds
+  return n * 1000;
 };
 
 module.exports = {
@@ -51,7 +49,6 @@ module.exports = {
   mongoUri: process.env.MONGO_URI,
   jwtSecret: process.env.JWT_SECRET,
   redisUrl: process.env.REDIS_URL || '',
-  // Comma-separated origin allowlist, enforced when NODE_ENV=production.
   corsOrigins: (process.env.CORS_ORIGIN || 'http://localhost:5173')
     .split(',')
     .map((origin) => origin.trim())
@@ -61,15 +58,18 @@ module.exports = {
     max: toPositiveInt(process.env.RATE_LIMIT_MAX, 100),
   },
   jwt: {
-    accessTtlMs: ttlToMs(process.env.JWT_ACCESS_TTL, 15 * 60 * 1000), // default 15 min
-    refreshTtlMs: ttlToMs(process.env.JWT_REFRESH_TTL, 7 * 24 * 60 * 60 * 1000), // default 7 d
+    accessTtlMs: ttlToMs(process.env.JWT_ACCESS_TTL, 15 * 60 * 1000),
+    refreshTtlMs: ttlToMs(process.env.JWT_REFRESH_TTL, 7 * 24 * 60 * 60 * 1000),
   },
-  // Admin seed (npm run seed:admin)
   adminPhone: process.env.ADMIN_PHONE || '',
   adminPassword: process.env.ADMIN_PASSWORD || '',
-  // Integrations wired up in later phases (kept here so .env is complete from day one).
   emailApiKey: process.env.EMAIL_API_KEY || '',
   smsApiKey: process.env.SMS_API_KEY || '',
   paymentApiKey: process.env.PAYMENT_API_KEY || '',
+  paymentApiSecret: process.env.PAYMENT_API_SECRET || '',
   mapsApiKey: process.env.MAPS_API_KEY || '',
+  dataGovInApiKey: process.env.DATA_GOV_IN_API_KEY || '',
+  agmarknetBaseUrl: process.env.AGMARKNET_BASE_URL || '',
+  mlServiceUrl: process.env.ML_SERVICE_URL || '',
+  useMl: process.env.USE_ML === 'true',
 };
